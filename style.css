@@ -12,6 +12,6 @@ body {
   #letters {
     display: flex;
     flex-wrap: wrap;
-    max-width: 660px; /* ボタンが二段になるように調整 */
+    max-width: 760px; /* ボタンが二段になるように調整 */
   }
   
