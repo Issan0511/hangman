@@ -8,13 +8,20 @@ let guessedLetters = "";
 let wrongGuesses = 0;
 function startGame() {
   const wordInputBox = document.getElementById("wordInputBox");
-  word = wordInputBox.value; // 入力された単語を取得
-  
+  word = wordInputBox.value.toLowerCase();// 入力された単語を取得
+  const regex = /^[a-zA-Z]+$/;
+
   if(word === "") {
     console.log("単語が入力されていません");
+    alert("単語を入力してください。");
     return;
   }
 
+  if (!regex.test(word)) {
+    console.log("不適切な文字が入力されました");
+    alert("アルファベット以外の文字は使用できません。");
+    return;
+  }
   console.log(`選ばれた単語は ${word} です`);
   for(let i = 0; i < word.length; i++) {
     wordElement.innerHTML += "_ ";
@@ -35,16 +42,27 @@ function startGame() {
 // 初期化
 function initialize() {
   console.log("初期化");
+  const qwertyString = "qwertyuiopasdfghjklzxcvbnm";
+  
 
-
-
-  for(let i = 97; i <= 122; i++) {
-    const letter = String.fromCharCode(i);
-    const button = document.createElement("button");
-    button.innerText = letter;
-    button.addEventListener("click", guess);
-    lettersElement.appendChild(button);
-  }
+    // QWERTY配列の各行
+    const rows = [
+      'qwertyuiop',
+      'asdfghjkl',
+      'zxcvbnm'
+    ];
+  
+    for(const row of rows) {
+      for(const letter of row) {
+        const button = document.createElement("button");
+        button.innerText = letter;
+        button.addEventListener("click", guess);
+        lettersElement.appendChild(button);
+      }
+      // 改行を追加
+      const br = document.createElement("br");
+      lettersElement.appendChild(br);
+    }
 }
 // 単語の更新
 function updateWord() {
