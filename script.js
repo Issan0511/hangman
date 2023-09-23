@@ -10,7 +10,14 @@ function startGame() {
   const wordInputBox = document.getElementById("wordInputBox");
   word = wordInputBox.value.toLowerCase();// 入力された単語を取得
   const regex = /^[a-zA-Z]+$/;
-
+// URLからwordを取得して設定
+const wordFromUrl = getWordFromURL();
+if (wordFromUrl) {
+  word = wordFromUrl;
+} else {
+  const wordInputBox = document.getElementById("wordInputBox");
+  word = wordInputBox.value.toLowerCase();// 入力された単語を取得
+}
   if(word === "") {
     console.log("単語が入力されていません");
     alert("単語を入力してください。");
@@ -23,6 +30,7 @@ function startGame() {
     return;
   }
   console.log(`選ばれた単語は ${word} です`);
+  setWordToURL(word);
   for(let i = 0; i < word.length; i++) {
     wordElement.innerHTML += "_ ";
   }
@@ -36,6 +44,43 @@ function startGame() {
   // アンダーバーで単語の長さを表示
   // displayWord() など、あなたのコードに合わせて適当な関数を呼び出す
 }
+function base64Encode(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function setWordToURL(word) {
+  const encodedWord = base64Encode(word); 
+  const newUrl = new URL(window.location.href);
+  newUrl.searchParams.set("word", encodedWord);
+  window.history.pushState({}, '', newUrl.href);
+}
+function copyURLToClipboard() {
+  const tempInput = document.createElement("input");
+  document.body.appendChild(tempInput);
+  tempInput.value = window.location.href;
+  tempInput.select();
+  document.execCommand("copy");
+  document.body.removeChild(tempInput);
+  alert("URLがクリップボードにコピーされました。");
+}
+function base64Decode(str) {
+  try {
+    return decodeURIComponent(escape(atob(str)));
+  } catch (e) {
+    console.error("Decoding failed:", e);
+    return null;
+  }
+}
+
+function getWordFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const encodedWord = urlParams.get("word");
+  if (!encodedWord) {
+    return null;
+  }
+  return base64Decode(encodedWord);
+}
+
+document.getElementById("copyButton").addEventListener("click", copyURLToClipboard);
 
 // 初期化など、他の必要なコード
 
@@ -124,4 +169,39 @@ function updateHangman() {
   }
 }
 
+window.onload = function() {
+  // 他の初期化処理
 initialize();
+
+  const wordFromUrl = getWordFromURL();
+  if (wordFromUrl) {
+    word = wordFromUrl;
+    startGame();
+  }
+};
+// ゲームオーバーの際のリセット処理
+// リセット関数を定義
+function resetGame() {
+  word = "";
+  guessedLetters = "";
+  wrongGuesses = 0;
+  hangmanImg.src = `hangman0.png`; // 初期画像に戻す
+  wordElement.innerHTML = "";
+  messageElement.innerHTML = "";
+  const wordInputArea = document.getElementById("wordInputArea");
+  wordInputArea.style.display = "block";
+  
+  // ボタンを再度有効にする
+  const buttons = document.querySelectorAll("#letters button");
+  buttons.forEach(button => {
+    button.disabled = false;
+  });
+
+  // URLから単語を削除
+  const url = new URL(window.location.href);
+  url.searchParams.delete("word");
+  window.history.pushState({}, '', url.href);
+}
+
+// リセットボタンにイベントリスナーを設定
+document.getElementById("resetButton").addEventListener("click", resetGame);
